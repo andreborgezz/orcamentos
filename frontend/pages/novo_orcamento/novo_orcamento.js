@@ -6,18 +6,62 @@
 const API_BASE = 'http://localhost:3000/api';
 
 let ID_USUARIO = null;
+let EDIT_MODE_ID = null;
 let itemCounter = 0;
 
 // ── Init ──
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const usuario = requireAuth();
   if (!usuario) return;
 
   ID_USUARIO = usuario.id_usuario;
   renderSidebar('novo_orcamento');
-  loadClientes();
+  
+  await loadClientes();
+
+  // Verifica se estamos editando
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (id) {
+    EDIT_MODE_ID = id;
+    loadOrcamentoDetails(id);
+  }
+
   updateEmptyState();
 });
+
+// ── Load Detalhes do Orçamento para Edição ──
+async function loadOrcamentoDetails(id) {
+  try {
+    const res = await fetch(`${API_BASE}/orcamentos/detalhes/${id}`);
+    if (!res.ok) throw new Error('Erro ao buscar detalhes do orçamento');
+    
+    const orc = await res.json();
+    
+    // Titulo da página
+    const titleEl = document.querySelector('.page-title');
+    if (titleEl) titleEl.textContent = `Editar Orçamento #${id}`;
+
+    // Popula campos
+    document.getElementById('select-cliente').value = orc.id_cliente;
+    document.getElementById('input-desconto').value = orc.desconto || 0;
+    document.getElementById('input-frete').value = orc.frete || 0;
+
+    // Popula itens
+    const tbody = document.getElementById('tbody-items');
+    tbody.innerHTML = ''; // Limpa antes de popular
+    
+    orc.itens.forEach(item => {
+      addItemRow(item.nome_produto, item.quantidade, item.preco_unitario);
+    });
+
+    recalculate();
+    updateEmptyState();
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao carregar dados do orçamento.', 'error');
+  }
+}
 
 // ── Load Clientes para Select ──
 async function loadClientes() {
@@ -40,7 +84,7 @@ async function loadClientes() {
 }
 
 // ── Add Item Row ──
-function addItemRow() {
+function addItemRow(nome = '', qtd = 1, preco = '') {
   itemCounter++;
   const tbody = document.getElementById('tbody-items');
   
@@ -49,13 +93,13 @@ function addItemRow() {
   tr.id = `item-${itemCounter}`;
   tr.innerHTML = `
     <td>
-      <input type="text" class="form-input item-nome" placeholder="Nome do produto" required>
+      <input type="text" class="form-input item-nome" placeholder="Nome do produto" required value="${nome}">
     </td>
     <td>
-      <input type="number" class="form-input item-qtd" value="1" min="1" step="1" oninput="recalculate()">
+      <input type="number" class="form-input item-qtd" value="${qtd}" min="1" step="1" oninput="recalculate()">
     </td>
     <td>
-      <input type="number" class="form-input item-preco" placeholder="0,00" min="0" step="0.01" oninput="recalculate()">
+      <input type="number" class="form-input item-preco" placeholder="0,00" min="0" step="0.01" oninput="recalculate()" value="${preco}">
     </td>
     <td class="text-right">
       <span class="item-subtotal">R$ 0,00</span>
@@ -184,8 +228,11 @@ async function saveOrcamento() {
   `;
 
   try {
-    const res = await fetch(`${API_BASE}/orcamentos`, {
-      method: 'POST',
+    const url = EDIT_MODE_ID ? `${API_BASE}/orcamentos/${EDIT_MODE_ID}` : `${API_BASE}/orcamentos`;
+    const method = EDIT_MODE_ID ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method: method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
@@ -193,7 +240,7 @@ async function saveOrcamento() {
     if (!res.ok) throw new Error('Erro ao salvar');
 
     const result = await res.json();
-    showToast(`Orçamento #${result.id} criado com sucesso!`, 'success');
+    showToast(EDIT_MODE_ID ? 'Orçamento atualizado!' : `Orçamento #${result.id} criado!`, 'success');
     
     // Redirecionar para lista após 1.5s
     setTimeout(() => {

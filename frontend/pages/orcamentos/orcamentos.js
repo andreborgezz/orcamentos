@@ -66,18 +66,18 @@ function renderOrcamentos() {
   emptyState.style.display = 'none';
 
   tbody.innerHTML = orcamentosFiltrados.map(o => `
-    <tr>
+    <tr onclick="location.href='/pages/novo_orcamento/novo_orcamento.html?id=${o.id_orcamento || o.id}'" style="cursor: pointer;">
       <td><span class="orc-id">#${o.id_orcamento || o.id || '—'}</span></td>
-      <td><span class="orc-cliente">${escapeHtml(o.cliente_nome || o.id_cliente || '—')}</span></td>
+      <td><span class="orc-cliente">${escapeHtml(o.clientes?.nome || '—')}</span></td>
       <td><span class="orc-data">${formatDate(o.created_at || o.data_criacao)}</span></td>
       <td><span class="badge status-${o.status || 'rascunho'}">${getStatusLabel(o.status)}</span></td>
       <td class="text-right"><span class="orc-valor">${formatCurrency(o.valor_total || 0)}</span></td>
       <td>
         <div class="orc-actions">
-          <button class="btn btn-icon btn-sm btn-ghost" title="Visualizar">
+          <button class="btn btn-icon btn-sm btn-ghost" title="Visualizar" onclick="event.stopPropagation(); location.href='/pages/novo_orcamento/novo_orcamento.html?id=${o.id_orcamento || o.id}'">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
-          <button class="btn btn-icon btn-sm btn-ghost" title="Duplicar">
+          <button class="btn btn-icon btn-sm btn-ghost" title="Duplicar" onclick="event.stopPropagation(); /* lógica de duplicar futuramente */">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
           </button>
         </div>
