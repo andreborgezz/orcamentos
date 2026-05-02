@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CORE — Visualize e gerencie todos os seus orçamentos.">
+  <title>Orçamentos — CORE</title>
+  <link rel="stylesheet" href="../../global.css">
+  <link rel="stylesheet" href="orcamentos.css">
+  <link rel="icon" href="assets/LogoCore.png" type="Logo @Core">
+</head>
+
+<body>
+  <div class="app-layout">
+    <main class="main-content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Orçamentos</h1>
+            <p class="page-subtitle">Acompanhe seus orçamentos enviados e rascunhos.</p>
+          </div>
+          <a href="/pages/novo_orcamento/novo_orcamento.html" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="M12 5v14" />
+            </svg>
+            Novo Orçamento
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total</div>
+          <div class="stat-value" id="stat-total">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rascunhos</div>
+          <div class="stat-value" id="stat-rascunhos">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enviados</div>
+          <div class="stat-value" id="stat-enviados">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Valor Total</div>
+          <div class="stat-value" id="stat-valor">—</div>
+        </div>
+      </div>
+
+      <!-- Filters + Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="search-wrapper" style="max-width: 320px; width: 100%;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="text" class="search-input" id="search-orcamentos" placeholder="Buscar orçamento..."
+              oninput="filterOrcamentos()">
+          </div>
+          <select class="form-select" id="filter-status" onchange="filterOrcamentos()" style="width: 180px;">
+            <option value="">Todos</option>
+            <option value="rascunho">Rascunho</option>
+            <option value="enviado">Enviado</option>
+            <option value="aprovado">Aprovado</option>
+            <option value="recusado">Recusado</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table class="table" id="table-orcamentos">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th class="text-right">Valor Total</th>
+                <th class="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-orcamentos">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+          </svg>
+          <h3 class="empty-state-title">Nenhum orçamento encontrado</h3>
+          <p class="empty-state-text">Crie seu primeiro orçamento para começar.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/components/auth.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/toast.js"></script>
+  <script src="orcamentos.js"></script>
+</body>
+
+</html>

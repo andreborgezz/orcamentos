@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CORE — Gestão de clientes e CRM para orçamentos profissionais.">
+  <title>Clientes — CORE</title>
+  <link rel="stylesheet" href="../../global.css">
+  <link rel="stylesheet" href="clientes.css">
+  <link rel="icon" href="assets/LogoCore.png" type="Logo @Core">
+</head>
+
+<body>
+  <div class="app-layout">
+    <!-- Sidebar é injetada via JS -->
+
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Clientes</h1>
+            <p class="page-subtitle">Gerencie sua base de clientes e contatos comerciais.</p>
+          </div>
+          <button class="btn btn-primary" id="btn-add-cliente" onclick="openModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" x2="19" y1="8" y2="14" />
+              <line x1="22" x2="16" y1="11" y2="11" />
+            </svg>
+            Adicionar Cliente
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total de Clientes</div>
+          <div class="stat-value" id="stat-total">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Negociação Ativa</div>
+          <div class="stat-value" id="stat-ativos">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Fechados</div>
+          <div class="stat-value" id="stat-fechados">—</div>
+        </div>
+      </div>
+
+      <!-- Search + Filters -->
+      <div class="card">
+        <div class="card-header">
+          <div class="search-wrapper" style="max-width: 320px; width: 100%;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="text" class="search-input" id="search-clientes" placeholder="Buscar cliente..."
+              oninput="filterClientes()">
+          </div>
+          <div class="flex items-center gap-2">
+            <select class="form-select" id="filter-status" onchange="filterClientes()" style="width: 180px;">
+              <option value="">Todos os status</option>
+              <option value="lead">Lead</option>
+              <option value="negociacao">Negociação</option>
+              <option value="fechado">Fechado</option>
+              <option value="inativo">Inativo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <table class="table" id="table-clientes">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th class="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-clientes">
+              <!-- Rows renderizadas via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <h3 class="empty-state-title">Nenhum cliente encontrado</h3>
+          <p class="empty-state-text">Adicione seu primeiro cliente clicando no botão acima.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal: Novo Cliente -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Novo Cliente</h2>
+        <button class="modal-close" onclick="closeModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="form-cliente" onsubmit="handleSubmitCliente(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="input-nome">Nome completo</label>
+            <input type="text" class="form-input" id="input-nome" placeholder="Ex: João da Silva" required>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="input-email">E-mail</label>
+              <input type="email" class="form-input" id="input-email" placeholder="joao@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-telefone">Telefone</label>
+              <input type="tel" class="form-input" id="input-telefone" placeholder="(11) 99999-0000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-status">Status do negócio</label>
+            <select class="form-select" id="input-status">
+              <option value="lead">Lead</option>
+              <option value="negociacao">Negociação</option>
+              <option value="fechado">Fechado</option>
+              <option value="inativo">Inativo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-cliente">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="M12 5v14" />
+            </svg>
+            Salvar Cliente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/components/auth.js"></script>
+  <script src="/components/sidebar.js"></script>
+  <script src="/components/toast.js"></script>
+  <script src="clientes.js"></script>
+</body>
+
+</html>

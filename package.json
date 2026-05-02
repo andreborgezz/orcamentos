@@ -1,0 +1,8 @@
+{
+  "name": "core-budget",
+  "version": "1.0.0",
+  "description": "CORE — Sistema de Orçamentos",
+  "scripts": {
+    "dev": "npx nodemon backend/server.js --watch backend"
+  }
+}

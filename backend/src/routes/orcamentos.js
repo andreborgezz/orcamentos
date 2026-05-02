@@ -2,6 +2,19 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 
+// Listar orçamentos de um usuário
+router.get('/:id_usuario', async (req, res) => {
+    const { id_usuario } = req.params;
+    const { data, error } = await supabase
+        .from('orcamentos')
+        .select('*')
+        .eq('id_usuario', id_usuario)
+        .order('data_criacao', { ascending: false });
+
+    if (error) return res.status(400).json(error);
+    res.json(data);
+});
+
 // Criar Orçamento + Itens
 router.post('/', async (req, res) => {
     const { id_usuario, id_cliente, subtotal, desconto, frete, valor_total, itens } = req.body;

@@ -1,0 +1,204 @@
+/* ============================================================
+   CORE — Dashboard Page Styles
+   ============================================================ */
+
+/* Stats with icons */
+.dashboard-stats {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+}
+
+.metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.metric-icon-blue {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.metric-icon-green {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.metric-icon-purple {
+  background: #F3E8FF;
+  color: #7C3AED;
+}
+
+.metric-icon-amber {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-content .stat-value {
+  font-size: var(--font-size-xl);
+}
+
+/* Dashboard Two-Column Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--space-6);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6) !important;
+}
+
+.quick-action-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.quick-action-item:hover {
+  background: var(--color-border-subtle);
+}
+
+.quick-action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-action-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.qa-blue {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.qa-green {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.qa-purple {
+  background: #F3E8FF;
+  color: #7C3AED;
+}
+
+.quick-action-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-action-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.quick-action-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.quick-action-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.quick-action-item:hover .quick-action-arrow {
+  transform: translateX(2px);
+  color: var(--color-text-secondary);
+}
+
+/* Greeting time-based animation */
+.page-title {
+  animation: fade-up 0.4s ease;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status Badges (same as orcamentos) */
+.status-rascunho {
+  background: var(--color-border-subtle);
+  color: var(--color-text-secondary);
+}
+
+.status-enviado {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.status-aprovado {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.status-recusado {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+}

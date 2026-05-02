@@ -1,0 +1,101 @@
+/* ============================================================
+   CORE — Clientes Page Styles
+   ============================================================ */
+
+/* Badge variants for status */
+.status-lead { 
+  background: var(--color-primary-light); 
+  color: var(--color-primary); 
+}
+
+.status-negociacao { 
+  background: var(--color-warning-light); 
+  color: var(--color-warning); 
+}
+
+.status-fechado { 
+  background: var(--color-success-light); 
+  color: var(--color-success); 
+}
+
+.status-inativo { 
+  background: var(--color-border-subtle); 
+  color: var(--color-text-tertiary); 
+}
+
+/* Client row name styling */
+.client-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.client-email {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.client-phone {
+  color: var(--color-text-secondary);
+  font-family: 'Inter', monospace;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.01em;
+}
+
+/* Actions cell */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.actions-cell .btn-icon {
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.actions-cell .btn-icon:hover {
+  color: var(--color-text-primary);
+  background: var(--color-border-subtle);
+}
+
+/* Loading skeleton rows */
+.skeleton-row td {
+  padding: var(--space-4);
+}
+
+.skeleton-block {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-border-subtle) 25%, #E5E7EB 50%, var(--color-border-subtle) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-block.w-40 { width: 160px; }
+.skeleton-block.w-48 { width: 180px; }
+.skeleton-block.w-32 { width: 120px; }
+.skeleton-block.w-20 { width: 80px; }
+.skeleton-block.w-24 { width: 70px; }
+
+/* Table hover enhancement */
+#table-clientes tbody tr {
+  cursor: default;
+}
+
+/* Card header responsive */
+@media (max-width: 640px) {
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .search-wrapper {
+    max-width: 100% !important;
+  }
+
+  #filter-status {
+    width: 100% !important;
+  }
+}
