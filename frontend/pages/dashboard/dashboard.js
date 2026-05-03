@@ -13,23 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const ID_USUARIO = usuario.id_usuario;
 
   renderSidebar('dashboard');
-  setGreeting(usuario.nome);
   loadDashboardData(ID_USUARIO);
 });
-
-// ── Greeting based on time ──
-function setGreeting(nomeUsuario) {
-  const hour = new Date().getHours();
-  let greeting = 'Bom dia';
-  if (hour >= 12 && hour < 18) greeting = 'Boa tarde';
-  if (hour >= 18) greeting = 'Boa noite';
-
-  const nome = nomeUsuario ? nomeUsuario.split(' ')[0] : 'Usuário';
-  const titleEl = document.querySelector('.page-title');
-  if (titleEl) {
-    titleEl.textContent = `${greeting}, ${nome} 👋`;
-  }
-}
 
 // ── Load All Data ──
 async function loadDashboardData(ID_USUARIO) {

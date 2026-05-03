@@ -116,6 +116,30 @@ function renderSidebar(activePageId) {
         });
     });
   }
+
+  // Global Greeting Logic
+  var hour = new Date().getHours();
+  var greeting = 'Bom dia';
+  if (hour >= 12 && hour < 18) greeting = 'Boa tarde';
+  if (hour >= 18) greeting = 'Boa noite';
+
+  var headerDiv = document.querySelector('.page-header-row > div:first-child');
+  if (headerDiv) {
+    if (currentPage === 'dashboard') {
+      var titleEl = headerDiv.querySelector('.page-title');
+      if (titleEl) {
+        titleEl.textContent = greeting + ', ' + primeiroNome + '👋';
+      }
+    } else {
+      var greetingEl = document.createElement('div');
+      greetingEl.style.fontSize = 'var(--font-size-sm, 14px)';
+      greetingEl.style.color = 'var(--color-text-secondary, #64748b)';
+      greetingEl.style.marginBottom = '4px';
+      greetingEl.style.fontWeight = '500';
+      greetingEl.textContent = greeting + ', ' + primeiroNome + '👋';
+      headerDiv.insertBefore(greetingEl, headerDiv.firstChild);
+    }
+  }
 }
 
 window.renderSidebar = renderSidebar;
