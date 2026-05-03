@@ -64,16 +64,55 @@
             </div>
           </div>
 
-          <!-- Products Card -->
+          <!-- Budget Type Selector Card -->
           <div class="card mt-4">
             <div class="card-header">
               <h2 class="card-title">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
                   style="width:20px;height:20px;margin-right:8px;vertical-align:middle;color:var(--color-primary)">
+                  <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+                </svg>
+                Tipo de Orçamento
+              </h2>
+            </div>
+            <div class="card-body" style="padding: var(--space-4) var(--space-6);">
+              <div class="budget-type-selector" id="budget-type-selector">
+                <button class="type-btn active" id="type-btn-itens" onclick="setBudgetType('itens')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
+                  </svg>
+                  <span>Itens</span>
+                  <small>Qtd. e preço unitário</small>
+                </button>
+                <button class="type-btn" id="type-btn-servicos" onclick="setBudgetType('servicos')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                  <span>Serviços</span>
+                  <small>Horas/Dias + ISS</small>
+                </button>
+                <button class="type-btn" id="type-btn-hibrido" onclick="setBudgetType('hibrido')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                  </svg>
+                  <span>Híbrido</span>
+                  <small>Itens + Serviços</small>
+                </button>
+              </div>
+              <p class="type-description" id="type-description">Focado em quantidade e preço unitário. Ideal para quem vende mercadorias.</p>
+            </div>
+          </div>
+
+          <!-- Products/Services Card -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h2 class="card-title" id="items-card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                  style="width:20px;height:20px;margin-right:8px;vertical-align:middle;color:var(--color-primary)">
                   <path d="m7.5 4.27 9 5.15" />
-                  <path
-                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
                   <path d="m3.3 7 8.7 5 8.7-5" />
                   <path d="M12 22V12" />
                 </svg>
@@ -92,11 +131,12 @@
               <div class="items-table-container">
                 <table class="table items-table" id="table-items">
                   <thead>
-                    <tr>
-                      <th style="width: 40%;">Produto / Serviço</th>
-                      <th style="width: 15%;">Qtd.</th>
-                      <th style="width: 20%;">Preço Unit.</th>
-                      <th style="width: 20%;" class="text-right">Subtotal</th>
+                    <tr id="table-header-row">
+                      <th style="width: 35%;">Produto / Serviço</th>
+                      <th style="width: 12%;" id="th-qtd">Qtd.</th>
+                      <th style="width: 18%;">Preço Unit.</th>
+                      <th style="width: 15%;" id="th-imposto" class="text-center" style="display:none;">Imposto</th>
+                      <th style="width: 15%;" class="text-right">Subtotal</th>
                       <th style="width: 5%;"></th>
                     </tr>
                   </thead>
@@ -110,8 +150,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m7.5 4.27 9 5.15" />
-                  <path
-                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
                   <path d="m3.3 7 8.7 5 8.7-5" />
                   <path d="M12 22V12" />
                 </svg>
@@ -120,6 +159,36 @@
               </div>
             </div>
           </div>
+
+          <!-- Desconto Progressivo (aparece apenas quando há itens) -->
+          <div class="card mt-4" id="card-desconto-progressivo" style="display:none;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;color:var(--color-success)">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Desconto Progressivo
+              </h2>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-desconto-progressivo" onchange="toggleDescontoProgressivo()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="card-body" id="body-desconto-progressivo" style="display:none;">
+              <div class="progressive-discount-grid">
+                <div class="form-group">
+                  <label class="form-label" for="prog-min-itens">Mínimo de itens</label>
+                  <input type="number" class="form-input" id="prog-min-itens" value="3" min="1" step="1" oninput="recalculate()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="prog-desconto-pct">Desconto (%)</label>
+                  <input type="number" class="form-input" id="prog-desconto-pct" value="5" min="0" max="100" step="0.5" oninput="recalculate()">
+                </div>
+              </div>
+              <p class="form-hint mt-2" id="prog-hint">Desconto de 5% será aplicado automaticamente se houver 3 ou mais itens.</p>
+            </div>
+          </div>
+
         </div>
 
         <!-- Right Column: Summary -->
@@ -133,6 +202,18 @@
               <div class="summary-row">
                 <span class="summary-label">Subtotal</span>
                 <span class="summary-value" id="summary-subtotal">R$ 0,00</span>
+              </div>
+
+              <!-- Impostos row (só aparece em modo serviço) -->
+              <div class="summary-row" id="summary-impostos-row" style="display:none;">
+                <span class="summary-label" style="color:var(--color-warning);">ISS (5%)</span>
+                <span class="summary-value" id="summary-impostos" style="color:var(--color-warning);">R$ 0,00</span>
+              </div>
+
+              <!-- Desconto progressivo row -->
+              <div class="summary-row" id="summary-prog-row" style="display:none;">
+                <span class="summary-label" style="color:var(--color-success);">Desconto Progressivo</span>
+                <span class="summary-value" id="summary-prog-value" style="color:var(--color-success);">- R$ 0,00</span>
               </div>
 
               <div class="divider"></div>
@@ -161,14 +242,13 @@
               <button class="btn btn-primary btn-lg" id="btn-save" onclick="saveOrcamento()" style="width: 100%;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path
-                    d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                  <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
                   <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
                   <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                 </svg>
                 Salvar Orçamento
               </button>
-              <button class="btn btn-secondary" style="width: 100%;" onclick="exportarPDF()">
+              <button class="btn btn-secondary" style="width: 100%;" onclick="abrirModalTemplate()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -183,6 +263,79 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- Modal: Seleção de Template PDF -->
+  <div class="modal-overlay" id="modal-template" onclick="fecharModalTemplate(event)">
+    <div class="modal modal-template-picker">
+      <div class="modal-header">
+        <h3 class="modal-title">Escolha o Template do PDF</h3>
+        <button class="modal-close" onclick="fecharModalTemplate()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="gap: var(--space-3);">
+        <p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:var(--space-2);">Selecione o modelo que melhor representa sua proposta comercial.</p>
+
+        <!-- Template 01 -->
+        <div class="template-card" id="tpl-01" onclick="selectTemplate('01')">
+          <div class="template-preview tpl-preview-01">
+            <div class="tpl-preview-header"></div>
+            <div class="tpl-preview-lines">
+              <div></div><div></div><div class="wide"></div>
+            </div>
+            <div class="tpl-preview-totals"></div>
+          </div>
+          <div class="template-info">
+            <strong>Modelo 01 — Minimalista</strong>
+            <span>Design limpo, foco nos valores. Ideal para propostas rápidas e objetivas.</span>
+          </div>
+          <div class="template-check" id="check-01">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+        <!-- Template 02 -->
+        <div class="template-card" id="tpl-02" onclick="selectTemplate('02')">
+          <div class="template-preview tpl-preview-02">
+            <div class="tpl-preview-header-02"></div>
+            <div class="tpl-preview-body-02">
+              <div></div><div></div><div></div><div class="wide"></div>
+            </div>
+            <div class="tpl-preview-footer-02"></div>
+          </div>
+          <div class="template-info">
+            <strong>Modelo 02 — Corporativo</strong>
+            <span>Inclui validade, termos e cronograma. Perfeito para contratos formais.</span>
+          </div>
+          <div class="template-check" id="check-02">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+        <!-- Template 03 -->
+        <div class="template-card" id="tpl-03" onclick="selectTemplate('03')">
+          <div class="template-preview tpl-preview-03">
+            <div class="tpl-preview-img"></div>
+            <div class="tpl-preview-caption"></div>
+          </div>
+          <div class="template-info">
+            <strong>Modelo 03 — Visual / Portfólio</strong>
+            <span>Destaque para imagens e descrições. Ideal para projetos criativos e eventos.</span>
+          </div>
+          <div class="template-check" id="check-03">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModalTemplate()">Cancelar</button>
+        <button class="btn btn-primary" id="btn-exportar-template" onclick="exportarComTemplate()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Gerar PDF
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="/components/auth.js"></script>
