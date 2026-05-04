@@ -34,3 +34,52 @@ function showToast(message, type = 'success', duration = 3500) {
 }
 
 window.showToast = showToast;
+
+// ==========================================
+// TRATAMENTO GLOBAL DE ERROS DE REDE (FETCH)
+// ==========================================
+const originalFetch = window.fetch;
+window.fetch = async function(resource, config) {
+  // Configura um timeout de 15 segundos para evitar que a tela congele para sempre
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  
+  const modifiedConfig = {
+    ...config,
+    signal: config?.signal || controller.signal
+  };
+
+  try {
+    const response = await originalFetch(resource, modifiedConfig);
+    clearTimeout(timeoutId);
+    
+    // Tratamento de Sessão Expirada / Não Autorizado pelo Backend
+    if (response.status === 401 && typeof resource === 'string' && !resource.includes('/login')) {
+      if (typeof logout === 'function') {
+        logout();
+      } else {
+        localStorage.removeItem('core_user');
+        window.location.href = '/login.html';
+      }
+    }
+    
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    // Tratamento de Timeout
+    if (error.name === 'AbortError') {
+      showToast('O servidor demorou muito para responder. Tente novamente.', 'error');
+      throw new Error('Timeout: O servidor demorou muito para responder.');
+    }
+    
+    // Tratamento de falha de conexão (Internet caiu ou servidor offline)
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      showToast('Sem conexão com a internet ou servidor offline.', 'error');
+      throw new Error('Falha de conexão. Verifique sua internet ou tente mais tarde.');
+    }
+    
+    // Outros erros
+    throw error;
+  }
+};

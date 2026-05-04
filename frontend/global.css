@@ -533,6 +533,38 @@ input, select, textarea {
   width: 32px;
 }
 
+/* ── Button Loading State ── */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  color: transparent !important;
+}
+
+.btn-loading > * {
+  opacity: 0;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  top: 50%;
+  left: 50%;
+  margin-top: -9px;
+  margin-left: -9px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-secondary.btn-loading::after,
+.btn-ghost.btn-loading::after {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--color-primary);
+}
+
 /* ── Form Elements ── */
 .form-group {
   display: flex;

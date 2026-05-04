@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CORE — Crie sua conta no sistema de orçamentos profissional.">
+  <title>Cadastro - CORE</title>
+  <link rel="stylesheet" href="global.css">
+  <link rel="icon" href="assets/LogoCore.png" type="Logo @Core">
+
+  <style>
+    /* ── Cadastro Page Specific ── */
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--color-bg);
+      padding: var(--space-4);
+    }
+
+    .cadastro-container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* ── Branding (igual ao login) ── */
+    .login-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: var(--space-8);
+      animation: fade-up 0.5s ease;
+    }
+
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      background: var(--color-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .login-logo svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+
+    .login-brand h1 {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.03em;
+    }
+
+    .login-brand p {
+      font-size: var(--font-size-base);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-1);
+    }
+
+    /* ── Card ── */
+    .cadastro-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-sm);
+      animation: fade-up 0.5s ease 0.1s both;
+    }
+
+    .cadastro-card-title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-6);
+    }
+
+    /* ── Form Groups ── */
+    .form-group + .form-group {
+      margin-top: var(--space-4);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+
+    /* ── Divider com label ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin: var(--space-6) 0 var(--space-4);
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+    }
+
+    .section-divider-label {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      white-space: nowrap;
+    }
+
+    /* ── Password strength indicator ── */
+    .password-strength {
+      margin-top: var(--space-2);
+      display: none;
+    }
+
+    .password-strength.visible {
+      display: block;
+    }
+
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: var(--space-1);
+    }
+
+    .strength-segment {
+      height: 3px;
+      flex: 1;
+      border-radius: var(--radius-full);
+      background: var(--color-border);
+      transition: background var(--transition-base);
+    }
+
+    .strength-segment.active-weak    { background: var(--color-danger); }
+    .strength-segment.active-medium  { background: var(--color-warning); }
+    .strength-segment.active-strong  { background: var(--color-success); }
+
+    .strength-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      transition: color var(--transition-base);
+    }
+
+    /* ── Password toggle ── */
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper .form-input {
+      padding-right: 40px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-tertiary);
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+    }
+
+    .password-toggle:hover {
+      color: var(--color-text-secondary);
+    }
+
+    .password-toggle svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ── Submit ── */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      margin-top: var(--space-6);
+      font-size: var(--font-size-md);
+      font-weight: 600;
+    }
+
+    /* ── Error / Success ── */
+    .form-feedback {
+      display: none;
+      margin-top: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      text-align: center;
+    }
+
+    .form-feedback.error {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: var(--color-danger);
+    }
+
+    .form-feedback.success {
+      background: rgba(5, 150, 105, 0.08);
+      border: 1px solid rgba(5, 150, 105, 0.25);
+      color: var(--color-success);
+    }
+
+    /* ── Footer ── */
+    .cadastro-footer {
+      text-align: center;
+      margin-top: var(--space-6);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-tertiary);
+      animation: fade-up 0.5s ease 0.2s both;
+    }
+
+    .cadastro-footer a {
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
+    .cadastro-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Animations ── */
+    @keyframes fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="cadastro-container">
+
+    <!-- Branding -->
+    <div class="login-brand">
+      <div class="login-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2 2 7l10 5 10-5-10-5Z" />
+          <path d="m2 17 10 5 10-5" />
+          <path d="m2 12 10 5 10-5" />
+        </svg>
+      </div>
+      <h1>CORE</h1>
+      <p>Crie sua conta</p>
+    </div>
+
+    <!-- Cadastro Form -->
+    <div class="cadastro-card">
+      <p class="cadastro-card-title">Dados da conta</p>
+
+      <form id="form-cadastro" onsubmit="handleCadastro(event)" novalidate>
+
+        <!-- Seção: Dados pessoais -->
+        <div class="form-group">
+          <label class="form-label" for="input-nome">Nome completo</label>
+          <input type="text" class="form-input" id="input-nome"
+            placeholder="André Borges" required autocomplete="name">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-top:0">
+            <label class="form-label" for="input-email">E-mail</label>
+            <input type="email" class="form-input" id="input-email"
+              placeholder="seu@email.com" required autocomplete="email">
+          </div>
+          <div class="form-group" style="margin-top:0">
+            <label class="form-label" for="input-empresa">Nome da empresa</label>
+            <input type="text" class="form-input" id="input-empresa"
+              placeholder="Minha Empresa" autocomplete="organization">
+          </div>
+        </div>
+
+        <!-- Seção: Segurança -->
+        <div class="section-divider">
+          <span class="section-divider-label">Segurança</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-senha">Senha</label>
+          <div class="input-wrapper">
+            <input type="password" class="form-input" id="input-senha"
+              placeholder="••••••••" required autocomplete="new-password"
+              oninput="avaliarSenha(this.value)">
+            <button type="button" class="password-toggle" onclick="toggleSenha('input-senha', this)"
+              aria-label="Mostrar senha">
+              <!-- olho fechado (padrão) -->
+              <svg id="icon-eye-senha" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                <line x1="2" y1="2" x2="22" y2="22" />
+              </svg>
+            </button>
+          </div>
+          <!-- Strength indicator -->
+          <div class="password-strength" id="password-strength">
+            <div class="strength-bar">
+              <div class="strength-segment" id="seg1"></div>
+              <div class="strength-segment" id="seg2"></div>
+              <div class="strength-segment" id="seg3"></div>
+              <div class="strength-segment" id="seg4"></div>
+            </div>
+            <span class="strength-label" id="strength-label">—</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-confirmar">Confirmar senha</label>
+          <div class="input-wrapper">
+            <input type="password" class="form-input" id="input-confirmar"
+              placeholder="••••••••" required autocomplete="new-password">
+            <button type="button" class="password-toggle" onclick="toggleSenha('input-confirmar', this)"
+              aria-label="Mostrar confirmação de senha">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                <line x1="2" y1="2" x2="22" y2="22" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="form-feedback" id="form-feedback"></div>
+
+        <button type="submit" class="btn btn-primary btn-submit" id="btn-cadastrar">
+          Criar conta
+        </button>
+      </form>
+    </div>
+
+    <p class="cadastro-footer">
+      Já tem uma conta? <a href="/login.html">Entrar</a>
+    </p>
+  </div>
+
+  <script src="components/toast.js"></script>
+  <script src="components/auth.js"></script>
+  <script>
+    /* ── Mostrar / ocultar senha ── */
+    function toggleSenha(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+
+      // Troca o ícone
+      btn.innerHTML = isPassword
+        ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+            <line x1="2" y1="2" x2="22" y2="22"/>
+          </svg>`;
+    }
+
+    /* ── Avaliador de força da senha ── */
+    function avaliarSenha(valor) {
+      const strengthEl = document.getElementById('password-strength');
+      const label = document.getElementById('strength-label');
+      const segs = [
+        document.getElementById('seg1'),
+        document.getElementById('seg2'),
+        document.getElementById('seg3'),
+        document.getElementById('seg4'),
+      ];
+
+      if (!valor) {
+        strengthEl.classList.remove('visible');
+        return;
+      }
+
+      strengthEl.classList.add('visible');
+
+      let score = 0;
+      if (valor.length >= 8)  score++;
+      if (/[A-Z]/.test(valor)) score++;
+      if (/[0-9]/.test(valor)) score++;
+      if (/[^A-Za-z0-9]/.test(valor)) score++;
+
+      const niveis = [
+        { cls: 'active-weak',   texto: 'Senha fraca',   ativa: 1 },
+        { cls: 'active-medium', texto: 'Senha razoável', ativa: 2 },
+        { cls: 'active-medium', texto: 'Senha boa',      ativa: 3 },
+        { cls: 'active-strong', texto: 'Senha forte',    ativa: 4 },
+      ];
+      const nivel = niveis[score - 1] || niveis[0];
+
+      segs.forEach((seg, i) => {
+        seg.className = 'strength-segment';
+        if (i < nivel.ativa) seg.classList.add(nivel.cls);
+      });
+
+      label.textContent = nivel.texto;
+      label.style.color =
+        nivel.cls === 'active-weak'   ? 'var(--color-danger)'  :
+        nivel.cls === 'active-medium' ? 'var(--color-warning)' :
+                                        'var(--color-success)';
+    }
+
+    /* ── Exibir feedback ── */
+    function mostrarFeedback(mensagem, tipo = 'error') {
+      const el = document.getElementById('form-feedback');
+      el.textContent = mensagem;
+      el.className = `form-feedback ${tipo}`;
+      el.style.display = 'block';
+    }
+
+    function esconderFeedback() {
+      const el = document.getElementById('form-feedback');
+      el.style.display = 'none';
+    }
+
+    /* ── Submit ── */
+    async function handleCadastro(event) {
+      event.preventDefault();
+      esconderFeedback();
+
+      const nome    = document.getElementById('input-nome').value.trim();
+      const email   = document.getElementById('input-email').value.trim();
+      const empresa = document.getElementById('input-empresa').value.trim();
+      const senha   = document.getElementById('input-senha').value;
+      const confirmar = document.getElementById('input-confirmar').value;
+      const btn     = document.getElementById('btn-cadastrar');
+
+      // Validações client-side
+      if (!nome) {
+        return mostrarFeedback('Por favor, informe seu nome completo.');
+      }
+      if (!email) {
+        return mostrarFeedback('Por favor, informe seu e-mail.');
+      }
+      if (senha.length < 6) {
+        return mostrarFeedback('A senha deve ter pelo menos 6 caracteres.');
+      }
+      if (senha !== confirmar) {
+        return mostrarFeedback('As senhas não coincidem. Verifique e tente novamente.');
+      }
+
+      // Loading state
+      btn.classList.add('btn-loading');
+      btn.textContent = 'Criando conta...';
+
+      try {
+        const resultado = await fazerCadastro({
+          email_login:    email,
+          nome_completo:  nome,
+          nome_empresa:   empresa || null,
+          senha:          senha,
+        });
+
+        if (resultado.success) {
+          mostrarFeedback('Conta criada com sucesso! Redirecionando…', 'success');
+          setTimeout(() => {
+            window.location.href = '/pages/dashboard/dashboard.html';
+          }, 1500);
+        } else {
+          mostrarFeedback(resultado.error || 'Erro ao criar conta. Tente novamente.');
+          btn.classList.remove('btn-loading');
+          btn.textContent = 'Criar conta';
+        }
+      } catch (err) {
+        mostrarFeedback('Erro inesperado. Verifique sua conexão e tente novamente.');
+        btn.classList.remove('btn-loading');
+        btn.textContent = 'Criar conta';
+      }
+    }
+  </script>
+</body>
+
+</html>

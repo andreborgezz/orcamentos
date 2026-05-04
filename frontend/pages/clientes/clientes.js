@@ -8,6 +8,7 @@ const API_BASE = 'http://localhost:3000/api';
 let ID_USUARIO = null;
 let clientes = [];
 let clientesFiltrados = [];
+let EDIT_MODE_ID = null;
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -67,10 +68,10 @@ function renderClientes() {
       </td>
       <td>
         <div class="actions-cell">
-          <button class="btn btn-icon btn-sm btn-ghost" title="Editar">
+          <button class="btn btn-icon btn-sm btn-ghost" title="Editar" onclick="openModal(${c.id_cliente})">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>
           </button>
-          <button class="btn btn-icon btn-sm btn-ghost" title="Excluir" style="color: var(--color-danger);">
+          <button class="btn btn-icon btn-sm btn-ghost" title="Excluir" style="color: var(--color-danger);" onclick="deletarCliente(${c.id_cliente})">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           </button>
         </div>
@@ -106,14 +107,31 @@ function filterClientes() {
 }
 
 // ── Modal ──
-function openModal() {
-  document.getElementById('modal-overlay').classList.add('active');
+function openModal(id = null) {
+  EDIT_MODE_ID = id;
+  const overlay = document.getElementById('modal-overlay');
+  
+  if (id) {
+    const cliente = clientes.find(c => c.id_cliente === id);
+    if (!cliente) return;
+    document.querySelector('.modal-title').textContent = 'Editar Cliente';
+    document.getElementById('input-nome').value = cliente.nome;
+    document.getElementById('input-email').value = cliente.email || '';
+    document.getElementById('input-telefone').value = cliente.telefone || '';
+    document.getElementById('input-status').value = cliente.status_negocio;
+  } else {
+    document.querySelector('.modal-title').textContent = 'Novo Cliente';
+    document.getElementById('form-cliente').reset();
+  }
+  
+  overlay.classList.add('active');
   document.getElementById('input-nome').focus();
 }
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
   document.getElementById('form-cliente').reset();
+  EDIT_MODE_ID = null;
 }
 
 // Fechar modal clicando fora
@@ -126,12 +144,30 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
 
+// ── Deletar ──
+async function deletarCliente(id) {
+  if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/clientes/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao deletar');
+    
+    clientes = clientes.filter(c => c.id_cliente !== id);
+    filterClientes();
+    updateStats();
+    showToast('Cliente excluído.', 'success');
+  } catch (err) {
+    showToast('Erro ao excluir cliente.', 'error');
+  }
+}
+
 // ── Submit ──
 async function handleSubmitCliente(event) {
   event.preventDefault();
 
   const btn = document.getElementById('btn-submit-cliente');
-  btn.disabled = true;
+  const originalHTML = btn.innerHTML;
+  btn.classList.add('btn-loading');
   btn.textContent = 'Salvando...';
 
   const payload = {
@@ -143,29 +179,37 @@ async function handleSubmitCliente(event) {
   };
 
   try {
-    const res = await fetch(`${API_BASE}/clientes`, {
-      method: 'POST',
+    const url = EDIT_MODE_ID ? `${API_BASE}/clientes/${EDIT_MODE_ID}` : `${API_BASE}/clientes`;
+    const method = EDIT_MODE_ID ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
     if (!res.ok) throw new Error('Erro ao salvar');
 
-    const novoCliente = await res.json();
-    clientes.unshift(novoCliente);
+    const result = await res.json();
+    
+    if (EDIT_MODE_ID) {
+      const index = clientes.findIndex(c => c.id_cliente === EDIT_MODE_ID);
+      if (index !== -1) clientes[index] = result;
+      showToast('Cliente atualizado!', 'success');
+    } else {
+      clientes.unshift(result);
+      showToast('Cliente adicionado!', 'success');
+    }
+    
     filterClientes();
     updateStats();
     closeModal();
-    showToast('Cliente adicionado com sucesso!', 'success');
   } catch (err) {
     console.error(err);
     showToast('Erro ao salvar cliente. Tente novamente.', 'error');
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-      Salvar Cliente
-    `;
+    btn.classList.remove('btn-loading');
+    btn.innerHTML = originalHTML;
   }
 }
 

@@ -56,7 +56,7 @@ async function loadOrcamentoDetails(id) {
     tbody.innerHTML = ''; // Limpa antes de popular
     
     orc.itens.forEach(item => {
-      addItemRow(item.nome_produto, item.quantidade, item.preco_unitario);
+      addItemRow(item.nome_produto, item.quantidade, item.preco_unitario, item.descricao || '');
     });
 
     recalculate();
@@ -146,7 +146,7 @@ function toggleDescontoProgressivo() {
 }
 
 // ── Add Item Row ──
-function addItemRow(nome = '', qtd = 1, preco = '') {
+function addItemRow(nome = '', qtd = 1, preco = '', descricao = '') {
   itemCounter++;
   const tbody = document.getElementById('tbody-items');
   
@@ -155,13 +155,14 @@ function addItemRow(nome = '', qtd = 1, preco = '') {
   tr.id = `item-${itemCounter}`;
   
   const showImposto = currentBudgetType !== 'itens' ? 'table-cell' : 'none';
+  const escapedDesc = descricao.replace(/"/g, '&quot;');
 
   tr.innerHTML = `
     <td>
-      <input type="text" class="form-input item-nome" placeholder="Produto ou Serviço" required value="${nome}">
-      ${currentBudgetType !== 'itens' ? `
-        <textarea class="form-textarea mt-2 item-desc-tec" placeholder="Descrição técnica do serviço..." rows="1"></textarea>
-      ` : ''}
+      <input type="text" class="form-input item-nome" placeholder="Nome do item/serviço" required value="${nome}">
+    </td>
+    <td>
+      <textarea class="form-textarea item-desc-det" placeholder="Detalhe etapas, entregas ou especificações..." rows="2" style="min-height:56px;font-size:12px;" oninput="updatePreview()">${descricao}</textarea>
     </td>
     <td>
       <input type="number" class="form-input item-qtd" value="${qtd}" min="0.5" step="0.5" oninput="recalculate()">
@@ -304,7 +305,7 @@ async function saveOrcamento() {
     const nome = row.querySelector('.item-nome').value.trim();
     const quantidade = parseFloat(row.querySelector('.item-qtd').value) || 0;
     const preco_unitario = parseFloat(row.querySelector('.item-preco').value) || 0;
-    const descTecnica = row.querySelector('.item-desc-tec') ? row.querySelector('.item-desc-tec').value.trim() : null;
+    const descDetalhada = row.querySelector('.item-desc-det') ? row.querySelector('.item-desc-det').value.trim() : null;
 
     if (!nome) {
       hasError = true;
@@ -322,7 +323,7 @@ async function saveOrcamento() {
       nome_produto: nome, 
       quantidade, 
       preco_unitario,
-      descricao: descTecnica
+      descricao: descDetalhada
     });
   });
 
@@ -348,12 +349,9 @@ async function saveOrcamento() {
   };
 
   const btn = document.getElementById('btn-save');
-  btn.disabled = true;
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-    Salvando...
-  `;
+  btn.classList.add('btn-loading');
+  btn.innerHTML = 'Salvando...';
 
   try {
     const url = EDIT_MODE_ID ? `${API_BASE}/orcamentos/${EDIT_MODE_ID}` : `${API_BASE}/orcamentos`;
@@ -368,17 +366,14 @@ async function saveOrcamento() {
     if (!res.ok) throw new Error('Erro ao salvar');
 
     const result = await res.json();
-    showToast(EDIT_MODE_ID ? 'Orçamento atualizado!' : `Orçamento #${result.id} criado!`, 'success');
-    
-    setTimeout(() => {
-      window.location.href = '/pages/orcamentos/orcamentos.html';
-    }, 1500);
+    showToast(EDIT_MODE_ID ? 'Orçamento atualizado com sucesso!' : `Orçamento #${result.id} criado! Agora você pode exportar o PDF.`, 'success');
+    // Sem redirecionamento — o usuário pode exportar o PDF logo após salvar
 
   } catch (err) {
     console.error(err);
     showToast('Erro ao salvar o orçamento. Tente novamente.', 'error');
   } finally {
-    btn.disabled = false;
+    btn.classList.remove('btn-loading');
     btn.innerHTML = originalHTML;
   }
 }
@@ -389,6 +384,9 @@ function resetForm() {
   document.getElementById('tbody-items').innerHTML = '';
   document.getElementById('input-desconto').value = '0';
   document.getElementById('input-frete').value = '0';
+  document.getElementById('input-pagamento').value = '';
+  document.getElementById('input-validade').value = '15 dias';
+  
   
   if (document.getElementById('toggle-desconto-progressivo').checked) {
     document.getElementById('toggle-desconto-progressivo').click();
@@ -405,12 +403,49 @@ function updateEmptyState() {
   const tbody = document.getElementById('tbody-items');
   const empty = document.getElementById('empty-items');
   const table = document.getElementById('table-items');
-  const cardProg = document.getElementById('card-desconto-progressivo');
+  const cardProg = document.getElementById('card-desconto-progressivo') || document.getElementById('card-prog');
   
   const hasItems = tbody.querySelectorAll('.item-row').length > 0;
   empty.style.display = hasItems ? 'none' : 'flex';
   table.style.display = hasItems ? 'table' : 'none';
-  cardProg.style.display = hasItems ? 'block' : 'none';
+  if (cardProg) cardProg.style.display = hasItems ? 'block' : 'none';
+
+  updatePreview();
+}
+
+// ── Preview em Tempo Real ──
+function updatePreview() {
+  const rows = document.querySelectorAll('.item-row');
+  const cardPreview = document.getElementById('card-preview');
+  const previewBody = document.getElementById('preview-body');
+  if (!cardPreview || !previewBody) return;
+
+  if (rows.length === 0) {
+    cardPreview.style.display = 'none';
+    return;
+  }
+
+  cardPreview.style.display = 'block';
+  const AZUL = '#1e40af';
+
+  previewBody.innerHTML = Array.from(rows).map((row, i) => {
+    const nome = row.querySelector('.item-nome')?.value?.trim() || `Item ${i + 1}`;
+    const desc = row.querySelector('.item-desc-det')?.value?.trim() ||
+      `Execução de ${nome}. Inclui planejamento, desenvolvimento e entrega.`;
+    const qtd  = parseFloat(row.querySelector('.item-qtd')?.value) || 0;
+    const preco = parseFloat(row.querySelector('.item-preco')?.value) || 0;
+    const sub  = (qtd * preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    return `<div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+      <div style="min-width:32px;height:32px;background:${AZUL};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;flex-shrink:0;">${i+1}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#111;">${nome}</div>
+        <div style="font-size:11px;color:#555;margin-top:3px;line-height:1.5;">${desc.replace(/\n/g,'<br>')}</div>
+        <div style="margin-top:6px;font-size:11px;color:#888;">Qtd: <strong>${qtd}</strong> · Unit: <strong>${preco ? preco.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '—'}</strong></div>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:${AZUL};flex-shrink:0;">${sub}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── Helpers ──
@@ -442,228 +477,5 @@ function selectTemplate(id) {
   document.getElementById(`tpl-${id}`).classList.add('selected');
 }
 
-function exportarComTemplate() {
-  fecharModalTemplate();
-  
-  const rows = document.querySelectorAll('.item-row');
-  const usuario = getUsuarioLogado();
-  const nomeEmpresa = usuario?.empresa || 'CORE';
-  const logoUrl = usuario?.logo || null;
-  const selectCliente = document.getElementById('select-cliente');
-  const clienteNome = selectCliente.options[selectCliente.selectedIndex]?.text || 'Não informado';
-  const dataHoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  const numeroOrc = `ORC-${Date.now().toString().slice(-6)}`;
-
-  // Coleta dados dos totais visíveis
-  const subtotalStr = document.getElementById('summary-subtotal').textContent;
-  const totalStr = document.getElementById('summary-total').textContent;
-  const freteValue = parseFloat(document.getElementById('input-frete').value) || 0;
-  
-  // Calcula descontos somados (Manual + Progressivo)
-  const descontoManual = parseFloat(document.getElementById('input-desconto').value) || 0;
-  let descontoProg = 0;
-  if (descontoProgressivoAtivo && document.getElementById('summary-prog-row').style.display !== 'none') {
-    const txt = document.getElementById('summary-prog-value').textContent;
-    descontoProg = parseFloat(txt.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
-    descontoProg = Math.abs(descontoProg);
-  }
-  const descontoTotal = descontoManual + descontoProg;
-
-  // Impostos
-  let impostosTotal = 0;
-  if (currentBudgetType !== 'itens' && document.getElementById('summary-impostos-row').style.display !== 'none') {
-    const txt = document.getElementById('summary-impostos').textContent;
-    impostosTotal = parseFloat(txt.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
-  }
-
-  // Gera HTML dos itens baseado no template
-  let itensHtml = '';
-  rows.forEach((row, i) => {
-    const nome = row.querySelector('.item-nome')?.value || '-';
-    const qtd = parseFloat(row.querySelector('.item-qtd')?.value) || 0;
-    const preco = parseFloat(row.querySelector('.item-preco')?.value) || 0;
-    const descTec = row.querySelector('.item-desc-tec') ? row.querySelector('.item-desc-tec').value : '';
-    const rowSub = formatCurrency(qtd * preco); // Simplificado para visualização PDF
-
-    if (selectedTemplate === '01') {
-      itensHtml += `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">${i + 1}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">${nome}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${qtd}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${formatCurrency(preco)}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;">${rowSub}</td>
-      </tr>`;
-    } else if (selectedTemplate === '02') {
-      itensHtml += `<tr>
-        <td style="padding:12px;border-bottom:1px solid #e5e7eb;vertical-align:top;">${i + 1}</td>
-        <td style="padding:12px;border-bottom:1px solid #e5e7eb;">
-          <div style="font-weight:600;color:#111827;">${nome}</div>
-          ${descTec ? `<div style="font-size:12px;color:#6b7280;margin-top:4px;">${descTec}</div>` : ''}
-        </td>
-        <td style="padding:12px;border-bottom:1px solid #e5e7eb;text-align:center;vertical-align:top;">${qtd}</td>
-        <td style="padding:12px;border-bottom:1px solid #e5e7eb;text-align:right;vertical-align:top;">${formatCurrency(preco)}</td>
-        <td style="padding:12px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;vertical-align:top;">${rowSub}</td>
-      </tr>`;
-    } else if (selectedTemplate === '03') {
-      itensHtml += `
-      <div style="display:flex;gap:20px;margin-bottom:24px;background:#f9fafb;padding:16px;border-radius:12px;border:1px solid #e5e7eb;">
-        <div style="width:120px;height:120px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;flex-shrink:0;">
-          [Imagem]
-        </div>
-        <div style="flex:1;">
-          <h3 style="font-size:18px;margin-bottom:8px;color:#111827;">${nome}</h3>
-          ${descTec ? `<p style="font-size:14px;color:#6b7280;margin-bottom:12px;">${descTec}</p>` : ''}
-          <div style="display:flex;gap:16px;font-size:14px;">
-            <div><span style="color:#6b7280;">Qtd:</span> <strong>${qtd}</strong></div>
-            <div><span style="color:#6b7280;">Preço:</span> <strong>${formatCurrency(preco)}</strong></div>
-            <div style="margin-left:auto;"><span style="color:#6b7280;">Subtotal:</span> <strong style="font-size:16px;color:#2563eb;">${rowSub}</strong></div>
-          </div>
-        </div>
-      </div>`;
-    }
-  });
-
-  const logoHtml = logoUrl
-    ? `<img src="${logoUrl}" alt="Logo" style="height:52px;object-fit:contain;">`
-    : `<div style="font-size:22px;font-weight:800;color:#2563eb;letter-spacing:-0.04em;">${nomeEmpresa}</div>`;
-
-  let html = '';
-
-  if (selectedTemplate === '01') {
-    // TEMPLATE 01: Minimalista (Igual ao que existia)
-    html = `<!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8">
-      <title>Orçamento ${numeroOrc}</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; color:#111827; padding:40px; font-size:14px; }
-        .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px; padding-bottom:24px; border-bottom:2px solid #2563eb; }
-        table { width:100%; border-collapse:collapse; margin-top:20px; }
-        th { padding:10px 12px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; border-bottom:2px solid #e5e7eb; }
-        .totals { margin-top:30px; display:flex; justify-content:flex-end; }
-        .totals-box { width:260px; }
-        .totals-row { display:flex; justify-content:space-between; padding:6px 0; color:#6b7280; }
-        .totals-row.total { font-size:18px; font-weight:700; color:#111827; margin-top:8px; padding-top:12px; border-top:2px solid #111827; }
-        @media print { body { padding:20px; } }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div>${logoHtml}<div style="margin-top:12px;color:#6b7280;">Nº ${numeroOrc} <br> ${dataHoje}</div></div>
-        <div style="text-align:right;background:#f9fafb;padding:16px;border-radius:8px;">
-          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;">Para:</div>
-          <div style="font-size:16px;font-weight:600;">${clienteNome}</div>
-        </div>
-      </div>
-      <table>
-        <thead><tr><th style="width:40px">#</th><th>Produto/Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor</th><th style="text-align:right">Subtotal</th></tr></thead>
-        <tbody>${itensHtml}</tbody>
-      </table>
-      <div class="totals"><div class="totals-box">
-        <div class="totals-row"><span>Subtotal</span><span>${subtotalStr}</span></div>
-        ${descontoTotal > 0 ? `<div class="totals-row"><span>Descontos</span><span style="color:#059669;">- ${formatCurrency(descontoTotal)}</span></div>` : ''}
-        ${impostosTotal > 0 ? `<div class="totals-row"><span>Impostos (ISS)</span><span>${formatCurrency(impostosTotal)}</span></div>` : ''}
-        ${freteValue > 0 ? `<div class="totals-row"><span>Frete</span><span>${formatCurrency(freteValue)}</span></div>` : ''}
-        <div class="totals-row total"><span>Total</span><span>${totalStr}</span></div>
-      </div></div>
-      <script>window.onload=()=>window.print();<\/script>
-    </body></html>`;
-  
-  } else if (selectedTemplate === '02') {
-    // TEMPLATE 02: Corporativo
-    html = `<!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8">
-      <title>Proposta ${numeroOrc}</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#374151; padding:40px; font-size:13px; line-height:1.6; }
-        .top-bar { height:8px; background:#111827; position:absolute; top:0; left:0; right:0; }
-        .header { margin-top:20px; display:flex; justify-content:space-between; margin-bottom:40px; }
-        h1 { font-size:24px; color:#111827; margin-bottom:4px; }
-        .client-box { border-left:3px solid #2563eb; padding-left:16px; margin-bottom:30px; }
-        table { width:100%; border-collapse:collapse; margin-bottom:30px; }
-        th { background:#f3f4f6; padding:12px; text-align:left; font-size:12px; color:#111827; }
-        .totals-table { width:300px; margin-left:auto; border-collapse:collapse; }
-        .totals-table td { padding:8px 12px; border-bottom:1px solid #e5e7eb; }
-        .terms { margin-top:50px; font-size:11px; color:#6b7280; background:#f9fafb; padding:20px; border-radius:8px; }
-      </style>
-    </head>
-    <body>
-      <div class="top-bar"></div>
-      <div class="header">
-        <div><h1>Proposta Comercial</h1><div style="color:#6b7280;">Ref: ${numeroOrc} | Data: ${dataHoje}</div></div>
-        <div>${logoHtml}</div>
-      </div>
-      <div class="client-box">
-        <strong style="font-size:12px;text-transform:uppercase;color:#6b7280;">Preparado para</strong><br>
-        <span style="font-size:18px;color:#111827;font-weight:600;">${clienteNome}</span>
-      </div>
-      <table>
-        <thead><tr><th>#</th><th>Descrição do Item</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Un.</th><th style="text-align:right">Total</th></tr></thead>
-        <tbody>${itensHtml}</tbody>
-      </table>
-      <table class="totals-table">
-        <tr><td>Subtotal</td><td style="text-align:right">${subtotalStr}</td></tr>
-        ${descontoTotal > 0 ? `<tr><td>Descontos</td><td style="text-align:right;color:#059669">- ${formatCurrency(descontoTotal)}</td></tr>` : ''}
-        ${impostosTotal > 0 ? `<tr><td>Impostos Retidos</td><td style="text-align:right">${formatCurrency(impostosTotal)}</td></tr>` : ''}
-        ${freteValue > 0 ? `<tr><td>Frete</td><td style="text-align:right">${formatCurrency(freteValue)}</td></tr>` : ''}
-        <tr><td style="font-weight:bold;font-size:16px;color:#111827;">Total Geral</td><td style="text-align:right;font-weight:bold;font-size:16px;color:#2563eb;">${totalStr}</td></tr>
-      </table>
-      <div class="terms">
-        <strong>Termos e Condições</strong><br>
-        1. Validade da proposta: 15 dias a partir da data de emissão.<br>
-        2. Condições de pagamento: A combinar. Sujeito a aprovação de crédito.<br>
-        3. Prazo de entrega/execução: Conforme cronograma acordado após assinatura.<br>
-        4. Os valores de impostos retidos na fonte (se aplicável) estão discriminados acima.
-      </div>
-      <script>window.onload=()=>window.print();<\/script>
-    </body></html>`;
-  
-  } else if (selectedTemplate === '03') {
-    // TEMPLATE 03: Visual / Portfolio
-    html = `<!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8">
-      <title>Projeto ${numeroOrc}</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; color:#374151; padding:40px; }
-        .hero { background:linear-gradient(135deg, #2563eb, #1d4ed8); border-radius:16px; padding:40px; color:white; margin-bottom:40px; display:flex; justify-content:space-between; align-items:center; }
-        .items-container { display:flex; flex-direction:column; gap:20px; margin-bottom:40px; }
-        .totals-banner { background:#111827; color:white; border-radius:12px; padding:30px; display:flex; justify-content:space-between; align-items:center; }
-        .totals-banner div { font-size:14px; color:#9ca3af; }
-        .totals-banner strong { font-size:24px; color:white; display:block; margin-top:4px; }
-      </style>
-    </head>
-    <body>
-      <div class="hero">
-        <div>
-          <div style="font-size:14px;text-transform:uppercase;letter-spacing:2px;opacity:0.8;">Apresentação de Projeto</div>
-          <h1 style="font-size:36px;margin:8px 0;">${clienteNome}</h1>
-          <div style="opacity:0.9;">Ref: ${numeroOrc} | ${dataHoje}</div>
-        </div>
-        <div style="background:white;padding:12px;border-radius:12px;">${logoHtml.replace('style="', 'style="max-width:150px;')}</div>
-      </div>
-      <h2 style="font-size:20px;color:#111827;margin-bottom:20px;border-bottom:2px solid #e5e7eb;padding-bottom:10px;">Escopo do Projeto</h2>
-      <div class="items-container">${itensHtml}</div>
-      <div class="totals-banner">
-        <div style="display:flex;gap:40px;">
-          <div>Subtotal<strong>${subtotalStr}</strong></div>
-          ${descontoTotal > 0 ? `<div>Desconto<strong style="color:#34d399">- ${formatCurrency(descontoTotal)}</strong></div>` : ''}
-          ${impostosTotal > 0 ? `<div>Impostos<strong>${formatCurrency(impostosTotal)}</strong></div>` : ''}
-        </div>
-        <div style="text-align:right;">Investimento Total<strong style="font-size:32px;color:#60a5fa;">${totalStr}</strong></div>
-      </div>
-      <script>window.onload=()=>window.print();<\/script>
-    </body></html>`;
-  }
-
-  const win = window.open('', '_blank', 'width=900,height=700');
-  win.document.write(html);
-  win.document.close();
-}
+// exportarComTemplate() foi movida para pdf_templates.js
+// Essa separação facilita manutenção dos layouts de PDF

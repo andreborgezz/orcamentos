@@ -132,11 +132,12 @@
                 <table class="table items-table" id="table-items">
                   <thead>
                     <tr id="table-header-row">
-                      <th style="width: 35%;">Produto / Serviço</th>
-                      <th style="width: 12%;" id="th-qtd">Qtd.</th>
-                      <th style="width: 18%;">Preço Unit.</th>
-                      <th style="width: 15%;" id="th-imposto" class="text-center" style="display:none;">Imposto</th>
-                      <th style="width: 15%;" class="text-right">Subtotal</th>
+                      <th style="width: 22%;">Produto / Serviço</th>
+                      <th style="width: 25%;" id="th-descricao">Descrição</th>
+                      <th style="width: 10%;" id="th-qtd">Qtd.</th>
+                      <th style="width: 14%;">Preço Unit.</th>
+                      <th style="width: 12%;" id="th-imposto" class="text-center" style="display:none;">Imposto</th>
+                      <th style="width: 12%;" class="text-right">Subtotal</th>
                       <th style="width: 5%;"></th>
                     </tr>
                   </thead>
@@ -189,6 +190,20 @@
             </div>
           </div>
 
+          <!-- Preview em Tempo Real (Modelo 03) -->
+          <div class="card mt-4" id="card-preview" style="display:none;">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;color:var(--color-primary)"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview — Escopo
+              </h2>
+              <span style="font-size:11px;color:var(--color-text-tertiary);">Como fica no Modelo 03</span>
+            </div>
+            <div id="preview-body" style="padding:12px 16px;background:#f8fafc;border-radius:0 0 12px 12px;display:flex;flex-direction:column;gap:8px;">
+              <p style="color:var(--color-text-tertiary);font-size:13px;text-align:center;padding:12px 0;">Adicione itens para ver o preview.</p>
+            </div>
+          </div>
+
         </div>
 
         <!-- Right Column: Summary -->
@@ -235,6 +250,31 @@
               <div class="summary-row summary-total">
                 <span class="summary-label">Total</span>
                 <span class="summary-value" id="summary-total">R$ 0,00</span>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Forma de Pagamento (campo obrigatório) -->
+              <div class="form-group">
+                <label class="form-label" for="input-pagamento">
+                  Forma de Pagamento
+                  <span style="color:var(--color-danger);margin-left:2px;">*</span>
+                </label>
+                <input type="text" class="form-input" id="input-pagamento"
+                  placeholder="Ex: PIX, Boleto, 50% + 50%..." required
+                  style="border-color:var(--color-border);">
+                <p class="form-hint" style="margin-top:4px;">Obrigatório para exportar o PDF.</p>
+              </div>
+
+              <!-- Validade -->
+              <div class="form-group mt-4">
+                <label class="form-label" for="input-validade">Validade da Proposta</label>
+                <select class="form-select" id="input-validade">
+                  <option value="7 dias">7 dias</option>
+                  <option value="15 dias" selected>15 dias</option>
+                  <option value="30 dias">30 dias</option>
+                  <option value="60 dias">60 dias</option>
+                </select>
               </div>
             </div>
 
@@ -342,6 +382,7 @@
   <script src="/components/sidebar.js"></script>
   <script src="/components/toast.js"></script>
   <script src="novo_orcamento.js"></script>
+  <script src="pdf_templates.js"></script>
 </body>
 
 </html>

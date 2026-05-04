@@ -8,13 +8,13 @@ Este é o plano de ação estratégico para transformar a versão atual da plata
 
 *O objetivo desta fase é fechar todas as pontas soltas do sistema para garantir que os usuários reais tenham uma experiência sem bugs, segura e completa.*
 
-- [ ] **Página de Cadastro (Sign Up):**
+- [X] **Página de Cadastro (Sign Up):**
   - Desenvolver uma página de registro (`cadastro.html`) com o mesmo padrão premium do login.
   - Integrar com a API e o banco de dados (Supabase) para criar novos usuários e perfis.
-- [ ] **Página de Configurações (Settings):**
+- [X] **Página de Configurações (Settings):**
   - Criar uma tela onde o usuário possa atualizar seus dados (Nome, E-mail, Senha).
   - Adicionar campos para os dados da empresa do usuário (Nome Fantasia, CNPJ, Endereço, Telefone, Logo). **Essencial para que os PDFs gerados tenham a identidade visual do cliente.**
-- [ ] **Loading States & Feedback Visual:**
+- [X] **Loading States & Feedback Visual:**
   - Implementar "spinners" (ícones de carregamento) nos botões de ação principal (Ex: Salvar Orçamento, Fazer Login).
   - Desabilitar botões durante requisições para prevenir cliques duplos e duplicação de dados.
 - [ ] **Tratamento Global de Erros:**
