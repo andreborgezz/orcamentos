@@ -1,76 +1,89 @@
-# 🚀 Plano de Voo: CORE Budget (SaaS)
+# 🚀 Refinamentos Pré-Deploy — CORE Budget
 
-Este é o plano de ação estratégico para transformar a versão atual da plataforma CORE Budget em um SaaS (Software as a Service) 100% comercializável, pronto para receber usuários e gerar receita.
+## 🔴 CRÍTICO (bloqueia o deploy)
 
----
+### 1. `localhost:3000` hardcoded em 6 arquivos
+Todos os `.js` de página usam `const API_BASE = 'http://localhost:3000/api'`.
+Em produção isso quebra completamente. Precisa ser uma variável relativa ou baseada no ambiente.
+**Fix:** Centralizar em um `config.js` global com `const API_BASE = '/api'` (funciona em qualquer host).
 
-## Fase 1: Refinamentos do Produto (O que falta no MVP)
+### 2. Sem proteção de rotas no backend
+Qualquer um com um `id_usuario` válido consegue acessar/deletar dados de outro usuário.
+Não há verificação de que o usuário logado é dono do recurso que está manipulando.
+**Fix:** Adicionar validação de `id_usuario` nas rotas críticas (DELETE, PUT).
 
-*O objetivo desta fase é fechar todas as pontas soltas do sistema para garantir que os usuários reais tenham uma experiência sem bugs, segura e completa.*
-
-- [X] **Página de Cadastro (Sign Up):**
-  - Desenvolver uma página de registro (`cadastro.html`) com o mesmo padrão premium do login.
-  - Integrar com a API e o banco de dados (Supabase) para criar novos usuários e perfis.
-- [X] **Página de Configurações (Settings):**
-  - Criar uma tela onde o usuário possa atualizar seus dados (Nome, E-mail, Senha).
-  - Adicionar campos para os dados da empresa do usuário (Nome Fantasia, CNPJ, Endereço, Telefone, Logo). **Essencial para que os PDFs gerados tenham a identidade visual do cliente.**
-- [X] **Loading States & Feedback Visual:**
-  - Implementar "spinners" (ícones de carregamento) nos botões de ação principal (Ex: Salvar Orçamento, Fazer Login).
-  - Desabilitar botões durante requisições para prevenir cliques duplos e duplicação de dados.
-- [ ] **Tratamento Global de Erros:**
-  - Exibir toasts amigáveis caso a internet caia ou o servidor demore a responder, evitando telas congeladas.
-- [ ] **Proteção e Expiração de Sessão:**
-  - Garantir que se a sessão local ou o token expirarem, o usuário seja direcionado automaticamente e com segurança para a tela de login.
+### 3. Página de cadastro (`cadastro.html`) sem integração
+O arquivo existe mas não foi verificado se o fluxo de criação de conta funciona de ponta a ponta.
+**Fix:** Testar o cadastro → login → dashboard completo antes do deploy.
 
 ---
 
+## 🟡 IMPORTANTE (experiência degradada sem isso)
 
-## Fase 2: Hospedagem e Setup de Produção (Deployment)
+### 4. Duplicar orçamento (botão existe, função não)
+O botão de cópia na tabela de orçamentos tem `/* lógica de duplicar futuramente */`.
+É uma funcionalidade muito esperada pelo usuário.
+**Fix:** Criar `POST /api/orcamentos/duplicar/:id` e implementar no frontend.
 
-*Tirar o código do ambiente local (localhost) e disponibilizar na nuvem de forma escalável e profissional.*
+### 5. Alterar status do orçamento
+Não há como mudar um orçamento de "Rascunho" → "Enviado" → "Aprovado" na interface.
+As badges existem mas o fluxo não existe.
+**Fix:** Dropdown de status na tabela de orçamentos (inline edit).
 
-- [ ] **Domínio Customizado:**
+### 6. Página de Clientes — ver orçamentos do cliente
+Na página de um cliente, não há como ver quais orçamentos pertencem a ele.
+**Fix:** Na listagem de clientes, mostrar badge com contagem de orçamentos.
 
-  - Registrar um domínio profissional (ex: `getcore.com.br` ou `corebudget.com.br`).
-- [ ] **Deploy do Frontend:**
-
-  - Hospedar os arquivos HTML/CSS/JS na **Vercel** ou **Cloudflare Pages** (gratuitos, ultra-rápidos e seguros).
-- [ ] **Deploy do Backend (API):**
-
-  - Hospedar o servidor Node.js/Express no **Render** ou **Railway**.
-- [ ] **Ajustes de Segurança (CORS & Env):**
-
-  - Configurar as variáveis de ambiente `.env` para apontar para as URLs de produção.
-  - Bloquear acessos via CORS, permitindo que apenas o domínio oficial converse com o backend.
-- [ ] **Banco de Dados (Supabase):**
-
-  - Validar as políticas RLS (Row Level Security) para garantir que um inquilino (tenant) jamais acesse os dados de outro.
-
-  ---
-
-## Fase 3: A Landing Page (Máquina de Vendas)
-
-*Criar a vitrine pública do projeto, focada em converter visitantes em usuários cadastrados.*
-
-- [ ] **Design e Estrutura:**
-  - **Hero Section:** Título principal focado na dor do cliente (ex: "Feche mais negócios com orçamentos em 1 clique"). Botão claro de "Comece Gratuitamente".
-  - **Showcase (Mockups):** Mostrar o visual incrível da plataforma (Dashboard e os PDFs gerados).
-  - **Features:** Destacar os principais benefícios (Cálculos automáticos, Controle de Clientes, Design Premium).
-- [ ] **Pricing (Planos de Assinatura):**
-  - Desenhar a estrutura de monetização inicial (ex: Freemium, Trial de 7 dias, ou Plano Pro mensal).
-- [ ] **Desenvolvimento Front-end da LP:**
-  - HTML/CSS/JS otimizado para SEO, rápido e responsivo.
+### 7. Busca de orçamentos busca só pelo ID
+A busca na página de Orçamentos não filtra pelo nome do cliente corretamente.
+**Fix:** Incluir `o.clientes?.nome` no `matchSearch` da função `filterOrcamentos`.
 
 ---
 
-## Fase 4: O Soft-Launch (Lançamento Beta)
+## 🟢 REFINAMENTOS DE UX (polimento final)
 
-*Colocar o sistema à prova antes de injetar dinheiro em marketing.*
+### 8. Confirmação de saída no Novo Orçamento
+Se o usuário tiver itens preenchidos e clicar em outro link da sidebar, perde tudo sem aviso.
+**Fix:** `window.onbeforeunload` quando há itens não salvos.
 
-- [ ] **Teste QA (Ponta a Ponta):**
-  - Simular toda a jornada: Cadastro > Configuração de Conta > Novo Cliente > Criação e Exportação de PDF > Análise no Dashboard.
-- [ ] **Convite a Early Adopters:**
-  - Liberar o sistema para 5 a 10 pessoas (empreendedores próximos) para uso gratuito inicial em troca de feedback construtivo.
-- [ ] **Abertura Oficial:**
-  - Implementar gateway de pagamento (Stripe / Mercado Pago / Asaas) na plataforma para as cobranças das assinaturas.
-  - Iniciar a prospecção e divulgação oficial do SaaS.
+### 9. Numeração de orçamento legível
+Os orçamentos aparecem como `#8`, `#12` — números de banco sem contexto.
+**Fix:** Gerar um número sequencial amigável por usuário (ex: `ORC-2026-001`).
+
+### 10. Feedback no botão "Salvar Orçamento"
+Quando salva, não há loading state no botão, o usuário não sabe se funcionou até o toast aparecer.
+**Fix:** Adicionar `.btn-loading` durante o `await fetch`.
+
+### 11. Empty state no Dashboard com CTA
+Quando não há orçamentos, o dashboard mostra apenas uma tabela vazia.
+**Fix:** Empty state com botão "+ Criar primeiro orçamento".
+
+### 12. PDF com número/data dinâmica
+O `numeroOrc` no `pdf_templates.js` usa `Date.now()` em vez do `id_orcamento` real.
+**Fix:** Usar o ID do orçamento salvo quando disponível (modo edição).
+
+---
+
+## 📦 DEPLOY EM SI
+
+| Etapa | O que fazer |
+|---|---|
+| **1. Variáveis de ambiente** | `API_BASE = '/api'` em todos os JS |
+| **2. Build / Servidor** | O backend Express serve o frontend — ok para começar |
+| **3. Supabase em produção** | Verificar se `.env` com as keys está configurado no servidor |
+| **4. HTTPS** | Obrigatório para o localStorage funcionar de forma segura |
+| **5. Domínio** | Apontar para o servidor com PM2 ou Railway/Render |
+
+---
+
+## Ordem sugerida de execução
+
+```
+1. Fix API_BASE (30 min) ← desbloqueia tudo
+2. Duplicar orçamento (1h)
+3. Alterar status inline (1h)  
+4. Busca por nome de cliente (15 min)
+5. Confirmação de saída (20 min)
+6. Testes ponta a ponta (cadastro → orçamento → PDF)
+7. Deploy
+```
