@@ -9,7 +9,8 @@ function exportarComTemplate() {
   const rows = document.querySelectorAll('.item-row');
   const usuario = getUsuarioLogado();
   const nomeEmpresa = usuario?.empresa || 'CORE';
-  const logoUrl = usuario?.logo || null;
+  // Usa logo customizada (upload local ou URL do Supabase), com fallback para o perfil
+  const logoUrl = pdfCustomLogo || usuario?.logo || null;
   const cnpj = usuario?.cnpj || '';
   const telefone = usuario?.telefone || '';
   const emailEmp = usuario?.email || '';
@@ -43,7 +44,8 @@ function exportarComTemplate() {
     impostosTotal = parseFloat(document.getElementById('summary-impostos').textContent.replace(/[^\d,.-]/g,'').replace(',','.')) || 0;
   }
 
-  const AZUL = '#1e40af';
+  // Usa a cor customizada com fallback para azul padrão CORE
+  const AZUL = pdfCustomColor || '#1e40af';
   const CINZA = '#333333';
 
   // ── Logo ──

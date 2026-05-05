@@ -80,10 +80,33 @@ function renderOrcamentos() {
           <button class="btn btn-icon btn-sm btn-ghost" title="Duplicar" onclick="event.stopPropagation(); /* lógica de duplicar futuramente */">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
           </button>
+          <button class="btn btn-icon btn-sm btn-ghost btn-danger-hover" title="Excluir orçamento" onclick="event.stopPropagation(); deleteOrcamento(${o.id_orcamento || o.id})">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+          </button>
         </div>
       </td>
     </tr>
   `).join('');
+}
+
+// ── Delete Orçamento ──
+async function deleteOrcamento(id) {
+  if (!confirm(`Tem certeza que deseja excluir o orçamento #${id}?\nEsta ação não pode ser desfeita.`)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/orcamentos/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir');
+
+    // Remove dos arrays locais e re-renderiza sem nova requisição
+    orcamentos = orcamentos.filter(o => (o.id_orcamento || o.id) !== id);
+    orcamentosFiltrados = orcamentosFiltrados.filter(o => (o.id_orcamento || o.id) !== id);
+    renderOrcamentos();
+    updateStats();
+    showToast(`Orçamento #${id} excluído com sucesso.`, 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao excluir o orçamento. Tente novamente.', 'error');
+  }
 }
 
 // ── Stats ──

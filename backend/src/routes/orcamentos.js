@@ -103,4 +103,27 @@ router.put('/:id_orcamento', async (req, res) => {
     res.json({ message: "Orçamento atualizado com sucesso!" });
 });
 
-module.exports = router;
+// Deletar Orçamento
+router.delete('/:id_orcamento', async (req, res) => {
+    const { id_orcamento } = req.params;
+
+    // 1. Remove os itens primeiro (FK constraint)
+    const { error: errItens } = await supabase
+        .from('itens_orcamento')
+        .delete()
+        .eq('id_orcamento', id_orcamento);
+
+    if (errItens) return res.status(400).json({ error: errItens.message });
+
+    // 2. Remove o orçamento
+    const { error: errOrc } = await supabase
+        .from('orcamentos')
+        .delete()
+        .eq('id_orcamento', id_orcamento);
+
+    if (errOrc) return res.status(400).json({ error: errOrc.message });
+
+    res.json({ message: "Orçamento excluído com sucesso!" });
+});
+
+module.exports = router;

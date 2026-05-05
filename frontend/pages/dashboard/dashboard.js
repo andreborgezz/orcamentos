@@ -77,9 +77,9 @@ function renderRecentes(orcamentos) {
   empty.style.display = 'none';
 
   tbody.innerHTML = orcamentos.map(o => `
-    <tr>
+    <tr onclick="location.href='/pages/novo_orcamento/novo_orcamento.html?id=${o.id_orcamento || o.id}'" style="cursor:pointer;">
       <td><span style="font-weight:600; font-variant-numeric:tabular-nums;">#${o.id_orcamento || o.id || '—'}</span></td>
-      <td>${escapeHtml(o.cliente_nome || o.id_cliente || '—')}</td>
+      <td>${escapeHtml(o.clientes?.nome || o.cliente_nome || '—')}</td>
       <td><span class="badge status-${o.status || 'rascunho'}">${getStatusLabel(o.status)}</span></td>
       <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;">${formatCurrency(o.valor_total || 0)}</td>
     </tr>

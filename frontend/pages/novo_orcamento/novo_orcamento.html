@@ -279,7 +279,7 @@
             </div>
 
             <div class="card-footer" style="flex-direction: column; gap: var(--space-3); align-items: stretch;">
-              <button class="btn btn-primary btn-lg" id="btn-save" onclick="saveOrcamento()" style="width: 100%;">
+              <button class="btn btn-primary btn-lg" id="btn-save" onclick="saveOrcamento()" style="width: 100%; background: var(--pdf-primary-color, var(--color-primary)); border-color: var(--pdf-primary-color, var(--color-primary));">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
@@ -287,6 +287,14 @@
                   <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                 </svg>
                 Salvar Orçamento
+              </button>
+              <button class="btn btn-pdf-customize" id="btn-open-pdf-modal" onclick="abrirModalPdfCustomize()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+                </svg>
+                Personalizar PDF
+                <span class="pdf-customize-color-dot" id="pdf-color-dot" style="background: var(--pdf-primary-color, var(--color-primary));"></span>
               </button>
               <button class="btn btn-secondary" style="width: 100%;" onclick="abrirModalTemplate()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -377,6 +385,101 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal: Personalizar PDF -->
+  <div class="modal-overlay" id="modal-pdf-customize" onclick="fecharModalPdfCustomize(event)">
+    <div class="modal modal-pdf-customize-card">
+      <div class="modal-header">
+        <div class="pdf-modal-title-group">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+          </svg>
+          <h3 class="modal-title">Personalizar PDF</h3>
+        </div>
+        <button class="modal-close" onclick="fecharModalPdfCustomize()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body pdf-customize-modal-body">
+        <p class="pdf-modal-subtitle">Defina a identidade visual do seu orçamento em segundos.</p>
+
+        <!-- Cor Principal -->
+        <div class="pdf-customize-field">
+          <label class="pdf-customize-label" for="pdf-color-picker">Cor Principal</label>
+          <div class="pdf-color-row">
+            <input type="color" id="pdf-color-picker" class="pdf-color-input" value="#1e40af" oninput="applyPdfColor(this.value)">
+            <div class="pdf-color-presets" id="pdf-color-presets">
+              <button class="pdf-color-preset active" style="background:#1e40af;" data-color="#1e40af" onclick="setPresetColor('#1e40af', this)" title="Azul CORE"></button>
+              <button class="pdf-color-preset" style="background:#dc2626;" data-color="#dc2626" onclick="setPresetColor('#dc2626', this)" title="Vermelho"></button>
+              <button class="pdf-color-preset" style="background:#16a34a;" data-color="#16a34a" onclick="setPresetColor('#16a34a', this)" title="Verde"></button>
+              <button class="pdf-color-preset" style="background:#7c3aed;" data-color="#7c3aed" onclick="setPresetColor('#7c3aed', this)" title="Roxo"></button>
+              <button class="pdf-color-preset" style="background:#0891b2;" data-color="#0891b2" onclick="setPresetColor('#0891b2', this)" title="Ciano"></button>
+              <button class="pdf-color-preset" style="background:#ea580c;" data-color="#ea580c" onclick="setPresetColor('#ea580c', this)" title="Laranja"></button>
+              <button class="pdf-color-preset" style="background:#111827;" data-color="#111827" onclick="setPresetColor('#111827', this)" title="Preto"></button>
+            </div>
+            <span class="pdf-color-hex" id="pdf-color-hex">#1e40af</span>
+          </div>
+        </div>
+
+        <!-- Modelo (Template) -->
+        <div class="pdf-customize-field">
+          <label class="pdf-customize-label">Modelo do PDF</label>
+          <div class="pdf-template-pills" id="pdf-template-pills">
+            <button class="pdf-tpl-pill active" data-tpl="01" onclick="selectPdfTemplate('01', this)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Minimalista
+            </button>
+            <button class="pdf-tpl-pill" data-tpl="02" onclick="selectPdfTemplate('02', this)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              Corporativo
+            </button>
+            <button class="pdf-tpl-pill" data-tpl="03" onclick="selectPdfTemplate('03', this)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              Visual
+            </button>
+          </div>
+        </div>
+
+        <!-- Logo da Empresa -->
+        <div class="pdf-customize-field">
+          <label class="pdf-customize-label">Logotipo da Empresa</label>
+          <div class="pdf-logo-area" id="pdf-logo-area" onclick="document.getElementById('pdf-logo-input').click()">
+            <div class="pdf-logo-placeholder" id="pdf-logo-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+              <span>Clique para enviar logo</span>
+              <small>PNG, JPG ou SVG (max. 5MB)</small>
+            </div>
+            <img id="pdf-logo-preview" class="pdf-logo-img" alt="Logo preview" style="display:none;">
+          </div>
+          <input type="file" id="pdf-logo-input" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+          <button class="pdf-logo-remove" id="pdf-logo-remove" onclick="removeLogo()" style="display:none;">✕ Remover logo</button>
+        </div>
+
+        <!-- Salvar como padrão -->
+        <div class="pdf-default-checkbox-row">
+          <label class="pdf-default-checkbox-label" for="chk-salvar-padrao">
+            <input type="checkbox" id="chk-salvar-padrao">
+            <span>Salvar como padrão para futuros orçamentos</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModalPdfCustomize()">Cancelar</button>
+        <button class="btn btn-primary" id="btn-apply-customize" onclick="salvarPreferenciaPDF()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>
+          </svg>
+          Aplicar Estilo
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /Modal Personalizar PDF -->
 
   <script src="/components/auth.js"></script>
   <script src="/components/sidebar.js"></script>

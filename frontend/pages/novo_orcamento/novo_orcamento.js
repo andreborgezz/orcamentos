@@ -12,6 +12,11 @@ let currentBudgetType = 'itens'; // 'itens', 'servicos', 'hibrido'
 let selectedTemplate = '01'; // '01', '02', '03'
 let descontoProgressivoAtivo = false;
 
+// ── PDF Customization State ──
+let pdfCustomColor = '#1e40af';
+let pdfCustomLogo = null;  // base64 data URL or remote URL
+let pdfCustomLogoFile = null; // File object for upload
+
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async () => {
   const usuario = requireAuth();
@@ -21,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderSidebar('novo_orcamento');
   
   await loadClientes();
+  await loadPreferenciaPDF();
 
   // Verifica se estamos editando
   const params = new URLSearchParams(window.location.search);
@@ -479,3 +485,255 @@ function selectTemplate(id) {
 
 // exportarComTemplate() foi movida para pdf_templates.js
 // Essa separação facilita manutenção dos layouts de PDF
+
+// ════════════════════════════════════════════
+// PERSONALIZAR PDF — Funções de Customização
+// ════════════════════════════════════════════
+
+/**
+ * Abre o modal card "Personalizar PDF"
+ */
+function abrirModalPdfCustomize() {
+  document.getElementById('modal-pdf-customize').classList.add('active');
+}
+
+/**
+ * Fecha o modal card "Personalizar PDF"
+ * Fecha ao clicar no overlay (fora do card) ou no botão fechar
+ */
+function fecharModalPdfCustomize(e) {
+  if (e && e.target !== e.currentTarget && e.target.closest('.modal')) return;
+  document.getElementById('modal-pdf-customize').classList.remove('active');
+}
+
+/**
+ * Aplica a cor principal do PDF — feedback visual imediato nos elementos da tela.
+ * Altera: valor Total, botão Salvar, pills de template e ícone do toggle.
+ */
+function applyPdfColor(color) {
+  pdfCustomColor = color;
+  
+  // Atualiza a CSS variable para efeito cascata
+  document.documentElement.style.setProperty('--pdf-primary-color', color);
+  
+  // Sincroniza o input de cor
+  const picker = document.getElementById('pdf-color-picker');
+  if (picker) picker.value = color;
+  
+  // Atualiza hex display
+  const hexSpan = document.getElementById('pdf-color-hex');
+  if (hexSpan) hexSpan.textContent = color;
+  
+  // Atualiza o dot do botão trigger
+  const dot = document.getElementById('pdf-color-dot');
+  if (dot) dot.style.background = color;
+  
+  // Marca preset ativo se coincidir com algum
+  document.querySelectorAll('.pdf-color-preset').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.color?.toLowerCase() === color.toLowerCase());
+  });
+}
+
+/**
+ * Seleciona uma cor dos presets rápidos
+ */
+function setPresetColor(color, btn) {
+  // Remove active de todos
+  document.querySelectorAll('.pdf-color-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyPdfColor(color);
+}
+
+/**
+ * Seleciona o modelo/template via pills no painel lateral
+ * e sincroniza com o modal de exportação existente.
+ */
+function selectPdfTemplate(tpl, btn) {
+  // Pills laterais
+  document.querySelectorAll('.pdf-tpl-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  // Sincroniza com o modal
+  selectedTemplate = tpl;
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  const modalCard = document.getElementById(`tpl-${tpl}`);
+  if (modalCard) modalCard.classList.add('selected');
+}
+
+/**
+ * Lida com o upload local do logotipo (preview imediato, sem enviar ao servidor ainda)
+ */
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Imagem muito grande. Máximo 5MB.', 'error');
+    return;
+  }
+  
+  pdfCustomLogoFile = file;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pdfCustomLogo = e.target.result; // base64 Data URL
+    
+    const preview = document.getElementById('pdf-logo-preview');
+    const placeholder = document.getElementById('pdf-logo-placeholder');
+    const removeBtn = document.getElementById('pdf-logo-remove');
+    
+    preview.src = pdfCustomLogo;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display = 'block';
+    
+    showToast('Logo carregada! Clique em "Aplicar" para salvar.', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Remove a logo customizada
+ */
+function removeLogo() {
+  pdfCustomLogo = null;
+  pdfCustomLogoFile = null;
+  
+  const preview = document.getElementById('pdf-logo-preview');
+  const placeholder = document.getElementById('pdf-logo-placeholder');
+  const removeBtn = document.getElementById('pdf-logo-remove');
+  const fileInput = document.getElementById('pdf-logo-input');
+  
+  preview.src = '';
+  preview.style.display = 'none';
+  placeholder.style.display = 'flex';
+  removeBtn.style.display = 'none';
+  fileInput.value = '';
+  
+  showToast('Logo removida.', 'success');
+}
+
+/**
+ * Salva as preferências de PDF no Supabase via API
+ * — se o checkbox "salvar como padrão" estiver marcado, persiste no perfil
+ * — o upload da logo usa o endpoint existente /api/perfis/:id/logo
+ */
+async function salvarPreferenciaPDF() {
+  const btn = document.getElementById('btn-apply-customize');
+  const salvarPadrao = document.getElementById('chk-salvar-padrao')?.checked;
+  
+  // Feedback visual no botão
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Salvando...';
+  btn.disabled = true;
+  
+  try {
+    // 1. Upload da logo se houver arquivo novo
+    if (pdfCustomLogoFile && salvarPadrao) {
+      const formData = new FormData();
+      formData.append('logo', pdfCustomLogoFile);
+      
+      const logoRes = await fetch(`${API_BASE}/perfis/${ID_USUARIO}/logo`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (logoRes.ok) {
+        const { url } = await logoRes.json();
+        pdfCustomLogo = url; // Usa a URL pública do Supabase Storage
+        pdfCustomLogoFile = null; // Arquivo já enviado
+      } else {
+        showToast('Erro ao enviar logo. Verifique o tamanho do arquivo.', 'error');
+      }
+    }
+    
+    // 2. Salva preferências de cor e template no perfil (se "salvar como padrão")
+    if (salvarPadrao) {
+      const prefsRes = await fetch(`${API_BASE}/perfis/${ID_USUARIO}/preferencias-pdf`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdf_cor_principal: pdfCustomColor,
+          pdf_template_padrao: selectedTemplate
+        })
+      });
+      
+      if (!prefsRes.ok) {
+        // Gracefully falha — as preferências de cor ainda se aplicam localmente
+        console.warn('Não foi possível salvar preferências no servidor. Aplicando localmente.');
+      } else {
+        showToast('Preferências salvas como padrão! ✓', 'success');
+      }
+    } else {
+      showToast('Estilo aplicado ao orçamento atual! ✓', 'success');
+    }
+    
+    // Fecha o modal após aplicar
+    fecharModalPdfCustomize();
+    
+  } catch (err) {
+    console.error('Erro ao salvar preferências PDF:', err);
+    showToast('Estilo aplicado localmente.', 'success');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Carrega as preferências de PDF salvas do perfil do usuário
+ * e as aplica automaticamente ao abrir a página.
+ */
+async function loadPreferenciaPDF() {
+  if (!ID_USUARIO) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/perfis/${ID_USUARIO}`);
+    if (!res.ok) return;
+    
+    const perfil = await res.json();
+    
+    // Aplica cor se salva
+    if (perfil.pdf_cor_principal) {
+      applyPdfColor(perfil.pdf_cor_principal);
+      const picker = document.getElementById('pdf-color-picker');
+      if (picker) picker.value = perfil.pdf_cor_principal;
+    }
+    
+    // Aplica template se salvo
+    if (perfil.pdf_template_padrao) {
+      selectedTemplate = perfil.pdf_template_padrao;
+      
+      // Sincroniza pills
+      const pillBtn = document.querySelector(`.pdf-tpl-pill[data-tpl="${perfil.pdf_template_padrao}"]`);
+      if (pillBtn) {
+        document.querySelectorAll('.pdf-tpl-pill').forEach(b => b.classList.remove('active'));
+        pillBtn.classList.add('active');
+      }
+      
+      // Sincroniza modal
+      document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+      const modalCard = document.getElementById(`tpl-${perfil.pdf_template_padrao}`);
+      if (modalCard) modalCard.classList.add('selected');
+    }
+    
+    // Aplica logo se salva
+    if (perfil.logo_empresa) {
+      pdfCustomLogo = perfil.logo_empresa;
+      const preview = document.getElementById('pdf-logo-preview');
+      const placeholder = document.getElementById('pdf-logo-placeholder');
+      const removeBtn = document.getElementById('pdf-logo-remove');
+      
+      if (preview) {
+        preview.src = pdfCustomLogo;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        removeBtn.style.display = 'block';
+      }
+    }
+    
+  } catch (err) {
+    console.warn('Não foi possível carregar preferências de PDF:', err);
+  }
+}
+

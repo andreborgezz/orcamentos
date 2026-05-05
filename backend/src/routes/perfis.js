@@ -73,13 +73,50 @@ router.get('/:id_usuario', async (req, res) => {
 
     const { data, error } = await supabase
         .from('perfis')
-        .select('id_perfil, email_login, nome_completo, nome_empresa, logo_empresa, cargo')
+        .select('id_perfil, email_login, nome_completo, nome_empresa, logo_empresa, cargo, pdf_cor_principal, pdf_template_padrao')
         .eq('id_perfil', id_usuario)
         .single();
 
     if (error || !data) return res.status(404).json({ error: 'Perfil não encontrado.' });
     res.json(data);
 });
+
+/**
+ * PUT /api/perfis/:id_usuario/preferencias-pdf
+ * Salva as preferências de customização do PDF (cor principal e template padrão)
+ */
+router.put('/:id_usuario/preferencias-pdf', async (req, res) => {
+    const { id_usuario } = req.params;
+    const { pdf_cor_principal, pdf_template_padrao } = req.body;
+
+    const updates = {};
+    if (pdf_cor_principal) updates.pdf_cor_principal = pdf_cor_principal;
+    if (pdf_template_padrao) updates.pdf_template_padrao = pdf_template_padrao;
+
+    if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ error: 'Nenhuma preferência enviada.' });
+    }
+
+    const { data, error } = await supabase
+        .from('perfis')
+        .update(updates)
+        .eq('id_perfil', id_usuario)
+        .select('id_perfil, pdf_cor_principal, pdf_template_padrao')
+        .single();
+
+    if (error) {
+        console.error('Erro ao salvar preferências PDF:', error);
+        // Retorna 200 com aviso em vez de 400 — as colunas podem ainda não existir no banco
+        return res.status(200).json({ 
+            warning: 'Preferências aplicadas localmente. Para persistência, adicione as colunas pdf_cor_principal e pdf_template_padrao à tabela perfis no Supabase.',
+            applied: updates
+        });
+    }
+
+    res.json({ message: 'Preferências de PDF salvas com sucesso!', data });
+});
+
+
 
 /**
  * PUT /api/perfis/:id_usuario

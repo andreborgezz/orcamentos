@@ -486,6 +486,368 @@
   color: white;
 }
 
+/* ══════════════════════════════════════════
+   PERSONALIZAR PDF — Modal Card + Trigger
+   ══════════════════════════════════════════ */
+
+/* ── Botão trigger na sidebar ── */
+.btn-pdf-customize {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.btn-pdf-customize svg {
+  width: 17px;
+  height: 17px;
+  color: var(--pdf-primary-color, var(--color-primary));
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.btn-pdf-customize:hover {
+  border-color: var(--pdf-primary-color, var(--color-primary));
+  color: var(--pdf-primary-color, var(--color-primary));
+  background: color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 6%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 18%, transparent);
+}
+
+/* Dot de cor dinâmica no botão */
+.pdf-customize-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 1.5px var(--color-border);
+  flex-shrink: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  margin-left: 2px;
+}
+
+/* ── Modal card Personalizar PDF ── */
+.modal-pdf-customize-card {
+  max-width: 440px;
+  width: 100%;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  animation: modal-slide-up 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes modal-slide-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Título com ícone */
+.pdf-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pdf-modal-title-group svg {
+  width: 20px;
+  height: 20px;
+  color: var(--pdf-primary-color, var(--color-primary));
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.pdf-modal-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
+/* Body com scroll suave se necessário */
+.pdf-customize-modal-body {
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Checkbox row dentro do modal */
+.pdf-default-checkbox-row {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Field wrapper */
+.pdf-customize-field {
+  margin-top: var(--space-4);
+}
+
+.pdf-customize-field:first-child {
+  margin-top: var(--space-2);
+}
+
+.pdf-customize-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+/* ── Color Row ── */
+.pdf-color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pdf-color-input {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  padding: 2px;
+  background: var(--color-surface);
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.pdf-color-input:hover {
+  border-color: var(--color-primary);
+}
+
+.pdf-color-presets {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.pdf-color-preset {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.pdf-color-preset:hover {
+  transform: scale(1.18);
+  border-color: rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 2px var(--color-border);
+}
+
+.pdf-color-preset.active {
+  border-color: white;
+  box-shadow: 0 0 0 2.5px var(--color-text-primary);
+  transform: scale(1.1);
+}
+
+.pdf-color-hex {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-tertiary);
+  font-weight: 600;
+  min-width: 54px;
+  text-align: right;
+}
+
+/* ── Template Pills ── */
+.pdf-template-pills {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pdf-tpl-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2) var(--space-1);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.pdf-tpl-pill svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.pdf-tpl-pill:hover {
+  border-color: var(--pdf-primary-color, var(--color-primary));
+  color: var(--pdf-primary-color, var(--color-primary));
+  background: color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 8%, white);
+}
+
+.pdf-tpl-pill.active {
+  border-color: var(--pdf-primary-color, var(--color-primary));
+  color: var(--pdf-primary-color, var(--color-primary));
+  background: color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 10%, white);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 25%, transparent);
+}
+
+/* ── Logo Upload ── */
+.pdf-logo-area {
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  overflow: hidden;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border-subtle);
+}
+
+.pdf-logo-area:hover {
+  border-color: var(--pdf-primary-color, var(--color-primary));
+  background: color-mix(in srgb, var(--pdf-primary-color, var(--color-primary)) 5%, white);
+}
+
+.pdf-logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-3);
+  color: var(--color-text-tertiary);
+}
+
+.pdf-logo-placeholder svg {
+  width: 24px;
+  height: 24px;
+  opacity: 0.5;
+}
+
+.pdf-logo-placeholder span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.pdf-logo-placeholder small {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+.pdf-logo-img {
+  max-height: 64px;
+  max-width: 100%;
+  object-fit: contain;
+  padding: var(--space-2);
+}
+
+.pdf-logo-remove {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-1);
+  padding: var(--space-1) 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity var(--transition-fast);
+}
+
+.pdf-logo-remove:hover {
+  opacity: 0.7;
+}
+
+/* ── Save as Default row ── */
+.pdf-customize-default-row {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pdf-default-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.pdf-default-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  accent-color: var(--pdf-primary-color, var(--color-primary));
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pdf-apply-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 7px 14px;
+  background: var(--pdf-primary-color, var(--color-primary));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pdf-apply-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.pdf-apply-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Summary Total com cor dinâmica */
+.summary-total .summary-value {
+  color: var(--pdf-primary-color, var(--color-primary));
+  transition: color 0.2s ease;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .orcamento-grid {
